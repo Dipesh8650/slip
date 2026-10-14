@@ -84,7 +84,7 @@ def put_note_by_slug(
         raise HTTPException(status_code=400, detail=str(e)) from e
     except NoteNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
-    return _note_to_response(note)
+    return _note_to_response(note, protected=bool(pwd_hash))
 
 
 @router.put("/{slug}/protection")

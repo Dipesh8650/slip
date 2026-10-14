@@ -1,0 +1,14 @@
+.git
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.venv
+**/venv
+**/.env
+**/.env.*
+!**/.env.example
+**/dist
+**/*.tsbuildinfo
+**/.pytest_cache
+**/*.log
+kaino.project.json
