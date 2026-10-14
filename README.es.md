@@ -55,8 +55,8 @@ Si tienes el enlace, tienes la nota.
 - **Enlaces compartibles**  
   Envía un enlace y los demás pueden leer tu nota al momento.
 
-- **Modo solo lectura**  
-  Comparte `/v/<slug>` para que no se pueda editar.
+- **Modo de vista**
+  Comparte `/v/<slug>` para ocultar los controles de edición. Es un modo de presentación, no una restricción de acceso: los destinatarios pueden quitar `/v/` para editar. La contraseña de la nota se aplica a ambos modos.
 
 - **Protección por contraseña**  
   Protege notas concretas con contraseña.
@@ -93,7 +93,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Abre **http://localhost:3000**. Ve a `/` para crear una nota, `/<slug>` para crear o editar, `/v/<slug>` para solo lectura.
+Abre **http://localhost:3000**. Ve a `/` para crear una nota, `/<slug>` para crear o editar, `/v/<slug>` para el modo de vista, que oculta los controles sin restringir el acceso de edición.
 
 ---
 

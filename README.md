@@ -55,8 +55,8 @@ If you have the link, you have the note.
 - **Shareable links**  
   Send a link and others can read your note instantly.
 
-- **View-only mode**  
-  Share `/v/<slug>` to prevent edits.
+- **Viewing mode**
+  Share `/v/<slug>` to hide editing controls. This is a presentation mode, not an access restriction: recipients can remove `/v/` to edit. Note passwords apply to both modes.
 
 - **Password protection**  
   Protect individual notes with a password.
@@ -93,7 +93,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Open **http://localhost:3000**. Go to `/` to create a note, `/<slug>` to create or edit, `/v/<slug>` to view only.
+Open **http://localhost:3000**. Go to `/` to create a note, `/<slug>` to create or edit, `/v/<slug>` for viewing mode, which hides editing controls without restricting editing access.
 
 ---
 

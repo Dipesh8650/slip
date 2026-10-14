@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useI18n } from "../i18n/context";
 
 const ALPHANUM = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -50,13 +50,15 @@ const IconClose = () => (
 
 interface Props {
   protected: boolean;
-  onSetPassword: (newPassword: string | null, currentPassword?: string) => void;
+  onSetPassword: (newPassword: string | null, currentPassword?: string) => Promise<void>;
   readOnly?: boolean;
 }
 
 export function LockButton({ protected: isProtected, onSetPassword, readOnly }: Props) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [current, setCurrent] = useState("");
@@ -76,8 +78,9 @@ export function LockButton({ protected: isProtected, onSetPassword, readOnly }: 
     navigator.clipboard.writeText(password);
   }, [password]);
 
-  const handleSet = (e: React.FormEvent) => {
+  const handleSet = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (pending.current) return;
     setError(null);
     if (password.length < 1) {
       setError(t("lockWritePassword"));
@@ -87,31 +90,43 @@ export function LockButton({ protected: isProtected, onSetPassword, readOnly }: 
       setError(t("lockNoMatch"));
       return;
     }
-    Promise.resolve(onSetPassword(password))
-      .then(() => {
-        setPassword("");
-        setConfirm("");
-        setOpen(false);
-      })
-      .catch((e) => setError(e instanceof Error ? e.message : "Error"));
+    pending.current = true;
+    setSaving(true);
+    try {
+      await onSetPassword(password);
+      setPassword("");
+      setConfirm("");
+      setOpen(false);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Error");
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
   };
-
-  const handleRemove = (e: React.FormEvent) => {
+  const handleRemove = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (pending.current) return;
     setError(null);
     if (!current) {
       setError(t("lockCurrentRequired"));
       return;
     }
-    Promise.resolve(onSetPassword(null, current))
-      .then(() => {
-        setCurrent("");
-        setOpen(false);
-      })
-      .catch((e) => setError(e instanceof Error ? e.message : t("errorsWrongPassword")));
+    pending.current = true;
+    setSaving(true);
+    try {
+      await onSetPassword(null, current);
+      setCurrent("");
+      setOpen(false);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t("errorsWrongPassword"));
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
   };
-
   const close = useCallback(() => {
+    if (pending.current) return;
     setOpen(false);
     setError(null);
     setPassword("");
@@ -162,6 +177,7 @@ export function LockButton({ protected: isProtected, onSetPassword, readOnly }: 
               <button
                 type="button"
                 onClick={close}
+                disabled={saving}
                 className="p-1.5 text-neutral-400 hover:text-neutral-600 rounded transition-colors"
                 aria-label={t("lockClose")}
               >
@@ -170,6 +186,7 @@ export function LockButton({ protected: isProtected, onSetPassword, readOnly }: 
             </div>
 
             <div className="p-6">
+              <fieldset disabled={saving} aria-busy={saving}>
               {isProtected ? (
                 <form onSubmit={handleRemove} className="space-y-4">
                   <div>
@@ -252,6 +269,7 @@ export function LockButton({ protected: isProtected, onSetPassword, readOnly }: 
                   </button>
                 </form>
               )}
+              </fieldset>
             </div>
           </div>
         </div>

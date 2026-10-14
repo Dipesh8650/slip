@@ -42,9 +42,9 @@ export function NotePage({ readOnly = false }: NotePageProps = {}) {
     setNoteProtection,
   } = useNote(slug ?? "");
 
-  const handleSetPassword = (newPassword: string | null, currentPassword?: string) => {
-    if (!note) return;
-    setNoteProtection(note.slug, newPassword, currentPassword);
+  const handleSetPassword = async (newPassword: string | null, currentPassword?: string): Promise<void> => {
+    if (!note) throw new Error("Note unavailable");
+    await setNoteProtection(note.slug, newPassword, currentPassword);
   };
 
   if (loading) return <SkeletonLoader />;

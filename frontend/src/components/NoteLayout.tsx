@@ -11,7 +11,7 @@ interface Props {
   saveStatus: SaveStatus;
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
-  onSetPassword?: (newPassword: string | null, currentPassword?: string) => void;
+  onSetPassword?: (newPassword: string | null, currentPassword?: string) => Promise<void>;
   readOnly?: boolean;
 }
 
@@ -55,6 +55,9 @@ export function NoteLayout({
               {t("viewOnlyBadge")}
             </span>
           </div>
+          <p className="text-xs font-sans text-neutral-500 mb-4">
+            {t("viewModeNotice")}
+          </p>
           <h1 className="text-2xl font-serif text-neutral-800 mb-6 break-words">
             {title || t("titlePlaceholder")}
           </h1>
@@ -103,6 +106,9 @@ export function NoteLayout({
               {new Date(note.updated_at).toLocaleString()}
             </time>
           </div>
+          <p className="text-xs font-sans text-neutral-500 mb-4">
+            {t("viewModeNotice")}
+          </p>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
