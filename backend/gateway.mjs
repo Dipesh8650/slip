@@ -72,7 +72,12 @@ async function handle(req, res) {
       });
     }
   }
-  if (req.headers["sec-fetch-site"] === "cross-site") {
+  const pageNavigation =
+    req.method === "GET" &&
+    req.headers["sec-fetch-mode"] === "navigate" &&
+    req.headers["sec-fetch-dest"] === "document" &&
+    !url.pathname.startsWith("/api/");
+  if (req.headers["sec-fetch-site"] === "cross-site" && !pageNavigation) {
     return reply(res, 403, "Cross-site request denied");
   }
   try {

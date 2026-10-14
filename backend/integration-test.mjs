@@ -145,6 +145,40 @@ try {
   assert.equal((await fetch(`${base}/`, {
     headers: { Cookie: cookie },
   })).status, 200);
+  const browserRequest = (path, headers, method = "GET") =>
+    new Promise((resolve, reject) => {
+      const request = http.request(`${base}${path}`, { method, headers }, response => {
+        response.resume();
+        response.once("end", () => resolve(response.statusCode));
+      });
+      request.once("error", reject);
+      request.end();
+    });
+  const navigationHeaders = {
+    "Sec-Fetch-Site": "cross-site",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Dest": "document",
+  };
+  assert.equal(await browserRequest("/", {
+    ...navigationHeaders, Cookie: cookie,
+  }), 200, "Authenticated portal navigation was blocked");
+  assert.equal(await browserRequest("/", navigationHeaders), 401,
+    "Portal navigation bypassed authentication");
+  const beforeCrossSite = upstreamRequests;
+  assert.equal(await browserRequest("/api/notes/test-note", {
+    ...navigationHeaders, Cookie: cookie,
+  }), 403, "Cross-site API navigation was accepted");
+  assert.equal(await browserRequest("/api/notes/test-note", {
+    Cookie: cookie,
+    Origin: base,
+    "Sec-Fetch-Site": "cross-site",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Dest": "empty",
+    "Content-Type": "application/json",
+  }, "PUT"), 403, "Cross-site write was accepted");
+  assert.equal(upstreamRequests, beforeCrossSite,
+    "Cross-site requests reached the backend");
+  console.log("Portal navigation and cross-site API guards passed");
   const write = origin => fetch(`${base}/api/notes/test-note`, {
     method: "PUT",
     headers: {
